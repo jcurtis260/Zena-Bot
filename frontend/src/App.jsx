@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Container,
   Box,
@@ -7,8 +7,23 @@ import {
   Typography,
   Paper,
   Snackbar,
-  Alert
+  Alert,
+  AppBar,
+  Toolbar,
+  Grid,
+  Card,
+  CardContent,
+  IconButton,
+  Divider,
+  CircularProgress,
+  Switch,
+  FormControlLabel
 } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import SpeedIcon from '@mui/icons-material/Speed';
 
 function App() {
   const [settings, setSettings] = useState({
@@ -18,6 +33,15 @@ function App() {
     slippage: Number(localStorage.getItem('slippage')) || 15,
     priorityFee: Number(localStorage.getItem('priorityFee')) || 5000,
     minContractScore: Number(localStorage.getItem('minContractScore')) || 85,
+  });
+
+  const [botStatus, setBotStatus] = useState({
+    isRunning: false,
+    lastScan: null,
+    tokensDiscovered: 0,
+    successfulTrades: 0,
+    totalProfit: 0,
+    walletBalance: 0
   });
 
   const [notification, setNotification] = useState({
@@ -38,7 +62,6 @@ function App() {
 
       if (!response.ok) throw new Error('Failed to save settings');
 
-      // Save to localStorage
       Object.entries(settings).forEach(([key, value]) => {
         localStorage.setItem(key, value);
       });
@@ -62,79 +85,200 @@ function App() {
     setNotification({ ...notification, open: false });
   };
 
+  const toggleBot = () => {
+    setBotStatus(prev => ({ ...prev, isRunning: !prev.isRunning }));
+  };
+
+  // Simulated data updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (botStatus.isRunning) {
+        setBotStatus(prev => ({
+          ...prev,
+          lastScan: new Date().toLocaleTimeString(),
+          tokensDiscovered: prev.tokensDiscovered + Math.floor(Math.random() * 2),
+          walletBalance: parseFloat((Math.random() * 10 + 5).toFixed(2))
+        }));
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [botStatus.isRunning]);
+
   return (
-    <Container maxWidth="md">
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Solana Memecoin Bot Settings
-        </Typography>
-        
-        <Paper sx={{ p: 3 }}>
-          <Box component="form" sx={{ '& > :not(style)': { m: 1 } }}>
-            <TextField
-              fullWidth
-              label="Telegram Bot Token"
-              value={settings.telegramToken}
-              onChange={(e) => setSettings({ ...settings, telegramToken: e.target.value })}
-            />
-            
-            <TextField
-              fullWidth
-              label="Telegram Chat ID"
-              value={settings.telegramChatId}
-              onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
-            />
-            
-            <TextField
-              type="number"
-              label="Buy Amount (SOL)"
-              value={settings.buyAmount}
-              onChange={(e) => setSettings({ ...settings, buyAmount: Number(e.target.value) })}
-            />
-            
-            <TextField
-              type="number"
-              label="Slippage (%)"
-              value={settings.slippage}
-              onChange={(e) => setSettings({ ...settings, slippage: Number(e.target.value) })}
-            />
-            
-            <TextField
-              type="number"
-              label="Priority Fee (lamports)"
-              value={settings.priorityFee}
-              onChange={(e) => setSettings({ ...settings, priorityFee: Number(e.target.value) })}
-            />
-            
-            <TextField
-              type="number"
-              label="Minimum Contract Score"
-              value={settings.minContractScore}
-              onChange={(e) => setSettings({ ...settings, minContractScore: Number(e.target.value) })}
-            />
-            
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSaveSettings}
-              sx={{ mt: 2 }}
-            >
-              Save Settings
-            </Button>
-          </Box>
-        </Paper>
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static" color="primary">
+        <Toolbar>
+          <TimelineIcon sx={{ mr: 2 }} />
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Solana Memecoin Trading Bot
+          </Typography>
+          <IconButton color="inherit">
+            <SettingsIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Grid container spacing={3}>
+          {/* Status Cards */}
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Bot Status
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={botStatus.isRunning}
+                        onChange={toggleBot}
+                        color="primary"
+                      />
+                    }
+                    label={botStatus.isRunning ? "Running" : "Stopped"}
+                  />
+                  {botStatus.isRunning && <CircularProgress size={20} sx={{ ml: 2 }} />}
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Wallet Balance
+                </Typography>
+                <Typography variant="h4">
+                  {botStatus.walletBalance.toFixed(2)} SOL
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Tokens Discovered
+                </Typography>
+                <Typography variant="h4">
+                  {botStatus.tokensDiscovered}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Last Scan
+                </Typography>
+                <Typography variant="h6">
+                  {botStatus.lastScan || 'Not started'}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Settings Section */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3, mt: 3 }}>
+              <Typography variant="h5" gutterBottom>
+                Bot Configuration
+              </Typography>
+              <Divider sx={{ mb: 3 }} />
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Telegram Bot Token"
+                    value={settings.telegramToken}
+                    onChange={(e) => setSettings({ ...settings, telegramToken: e.target.value })}
+                    type="password"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Telegram Chat ID"
+                    value={settings.telegramChatId}
+                    onChange={(e) => setSettings({ ...settings, telegramChatId: e.target.value })}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Buy Amount (SOL)"
+                    value={settings.buyAmount}
+                    onChange={(e) => setSettings({ ...settings, buyAmount: Number(e.target.value) })}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Slippage (%)"
+                    value={settings.slippage}
+                    onChange={(e) => setSettings({ ...settings, slippage: Number(e.target.value) })}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Priority Fee (lamports)"
+                    value={settings.priorityFee}
+                    onChange={(e) => setSettings({ ...settings, priorityFee: Number(e.target.value) })}
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    label="Minimum Contract Score"
+                    value={settings.minContractScore}
+                    onChange={(e) => setSettings({ ...settings, minContractScore: Number(e.target.value) })}
+                  />
+                </Grid>
+              </Grid>
+
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSaveSettings}
+                  startIcon={<SettingsIcon />}
+                >
+                  Save Settings
+                </Button>
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
 
         <Snackbar 
           open={notification.open} 
           autoHideDuration={6000} 
           onClose={handleClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert severity={notification.severity}>
+          <Alert onClose={handleClose} severity={notification.severity} sx={{ width: '100%' }}>
             {notification.message}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 
