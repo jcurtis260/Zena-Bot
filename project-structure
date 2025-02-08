@@ -1,0 +1,11 @@
+solana-meme-bot/
+├── frontend/
+│   ├── public/
+│   └── src/
+├── backend/
+│   ├── config/
+│   ├── models/
+│   ├── services/
+│   └── utils/
+├── package.json
+└── README.md 

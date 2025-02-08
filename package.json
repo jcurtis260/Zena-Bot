@@ -1,0 +1,26 @@
+{
+  "name": "solana-meme-bot",
+  "version": "1.0.0",
+  "description": "Solana Memecoin Trading Bot",
+  "scripts": {
+    "start:backend": "node backend/server.js",
+    "start:frontend": "cd frontend && npm start",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "install-all": "npm install && cd frontend && npm install"
+  },
+  "dependencies": {
+    "@project-serum/anchor": "^0.26.0",
+    "@solana/web3.js": "^1.87.6",
+    "axios": "^1.6.2",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "node-telegram-bot-api": "^0.64.0",
+    "playwright": "^1.41.2",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
